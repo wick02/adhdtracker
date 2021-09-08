@@ -4,18 +4,20 @@ My personal take on making a task tracker
 
 # Minimal Viable Product:
 
-## GUI
+ GUI
 
 User(s): Each one gets a
+
 Personal Calendar
 
 Tasks:
-Description of it
-Not Done -> In Progress -> Done
+    Not Done -> In Progress -> Done
+
 Progress Bar of all Tasks
 
 
 Basic Makefile to build the service
+
 Execute on the service to run it in ./bin/adhdtracker
 
 ## Programming languages:
