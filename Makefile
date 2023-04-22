@@ -1,17 +1,19 @@
-all: deps build
+APP_NAME=adhd-tracker
+APP_SRC=./src
+APP_OUT=./bin/$(APP_NAME)
+APP_PORT=8080
 
-deps:
-	go run build.go setup
-	godep restore
-	npm install
+.PHONY: all build clean run
+
+all: build
 
 build:
-	go run build.go build
-	npm run build
+	@mkdir -p bin
+	go build -o $(APP_OUT) $(APP_SRC)
 
-test:
-	godep go test -v ./pkg/...
-	npm run test
+clean:
+	rm -rf bin
 
 run:
-	./bin/adhdtracker-server
+	@echo "Starting $(APP_NAME) on port $(APP_PORT)..."
+	$(APP_OUT) -port $(APP_PORT)
