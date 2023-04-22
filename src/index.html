@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>ADHD Tracker</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="container mt-5">
+
+        <h1>ADHD Tracker</h1>
+
+        <div id="app">
+            <form @submit.prevent="addTask">
+                <div class="form-group">
+                    <label for="task-name">Task Name</label>
+                    <input type="text" class="form-control" id="task-name" v-model="newTask.name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Task</button>
+            </form>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="task in tasks" :key="task.id">
+                        <td>{{ task.name }}</td>
+                        <td>
+                            <select class="form-control" v-model="task.status" @change="updateTaskStatus(task)">
+                                <option value="Not Done">Not Done</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </td>
+                        <td><button class="btn btn-danger" @click="deleteTask(task)">Delete</button></td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                tasks: [],
+                newTask: {
+                    name: '',
+                },
+            },
+            methods: {
+                addTask: function () {
+                    var self = this;
+                    axios.post('/tasks', self.newTask)
+                        .then(function (response) {
+                            self.tasks.push(response.data.data);
+                            self.newTask.name = '';
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Task added successfully!',
+                                text: 'The task has been added to your list.',
+                            });
+                        })
+                        .catch(function (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error adding task!',
+                                text: 'There was an error adding the task to your list.',
+                            });
+                        });
+                },
+                updateTaskStatus: function (task) {
+                    var self = this;
+                    axios.put('/tasks/' + task.id, { status: task.status })
+                        .then(function (response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Task status updated!',
+                                text: 'The task status has been updated.',
+                            });
+                        })
+                        .catch(function (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error updating task status!',
+                                text: 'There was an error updating the task status.',
+                            });
+                        });
+                },
+                deleteTask: function (task) {
+                    var self = this;
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to undo this action!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            axios.delete('/tasks/' + task.id)
+                                .then(function (response) {
+                                    self.tasks.splice(self.tasks.indexOf(task), 1);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Task deleted successfully!',
+                                        text: 'The task has been removed from your list.',
+                                    });
+                                })
+                                .catch(function (error) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error deleting task!',
+                                        text: 'There was an error deleting the task from your list.',
+                                    });
+                                });
+                        }
+                    })
+                },
+
+
+            },
+            mounted: function () {
+                var self = this;
+                axios.get('/tasks')
+                    .then(function (response) {
+                        self.tasks = response.data.data;
+                    });
+            },
+        });
+    </script>
+
+</body>
+
+</html>
